@@ -31,9 +31,12 @@ package ru.wapstart.plus1.conversion.sdk;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 
 public final class Plus1ConversionTracker {
+	private static final String PREFERENCES_NAME = "Plus1ConversionTracker";
+	private static final String PREFERENCES_OPTION_NAME = "firstRun";
 	private static final int APP_TYPE_ID = 3;
 	
 	private String mConversionUrl = "http://cnv.plus1.wapstart.ru/";
@@ -45,14 +48,18 @@ public final class Plus1ConversionTracker {
 		mApplicationId = applicationId;
 	}
 	
-	public boolean isTrackNeeded()
+	public boolean isFirstRun()
 	{
-		return true;
+		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, false);
 	}
 	
 	public void run()
 	{
-		if (isTrackNeeded())
+		if (isFirstRun()) {
+			SharedPreferences.Editor editor = getPreferences().edit();
+			editor.putBoolean(PREFERENCES_OPTION_NAME, true);
+			editor.commit();
+
 			mContext.startActivity(
 				new Intent(
 					Intent.ACTION_VIEW,
@@ -61,6 +68,7 @@ public final class Plus1ConversionTracker {
 					)
 				)
 			);
+		}
 	}
 
 	public Plus1ConversionTracker setConversionUrl(String conversionUrl)
@@ -78,5 +86,13 @@ public final class Plus1ConversionTracker {
 			+ String.valueOf(APP_TYPE_ID)
 			+ "/"
 			+ String.valueOf(mApplicationId);
+	}
+
+	private SharedPreferences getPreferences()
+	{
+		return
+			mContext
+				.getApplicationContext()
+				.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
 	}
 }
