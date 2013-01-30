@@ -50,14 +50,14 @@ public final class Plus1ConversionTracker {
 	
 	public boolean isFirstRun()
 	{
-		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, false);
+		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, true);
 	}
 	
 	public void run()
 	{
 		if (isFirstRun()) {
 			SharedPreferences.Editor editor = getPreferences().edit();
-			editor.putBoolean(PREFERENCES_OPTION_NAME, true);
+			editor.putBoolean(PREFERENCES_OPTION_NAME, false);
 			editor.commit();
 
 			mContext.startActivity(
