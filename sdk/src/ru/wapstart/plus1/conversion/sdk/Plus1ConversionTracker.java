@@ -35,17 +35,21 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 public final class Plus1ConversionTracker {
+	public final class InvalidStateException extends Exception {
+		private static final long serialVersionUID = -6835835688341599416L;
+	}
+
 	private static final String PREFERENCES_NAME = "Plus1ConversionTracker";
 	private static final String PREFERENCES_OPTION_NAME = "firstRun";
 	private static final int APP_TYPE_ID = 3;
 	
 	private String mConversionUrl = "http://cnv.plus1.wapstart.ru/";
 	private Context mContext = null;
-	private int mApplicationId;
+	private int mApplicationId = 0;
+	private int mCampaignId = 0;
 	
-	public Plus1ConversionTracker(Context context, int applicationId) {
+	public Plus1ConversionTracker(Context context) {
 		mContext = context;
-		mApplicationId = applicationId;
 	}
 	
 	public boolean isFirstRun()
@@ -53,7 +57,7 @@ public final class Plus1ConversionTracker {
 		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, true);
 	}
 	
-	public void run()
+	public void run() throws InvalidStateException
 	{
 		if (isFirstRun()) {
 			SharedPreferences.Editor editor = getPreferences().edit();
@@ -71,6 +75,20 @@ public final class Plus1ConversionTracker {
 		}
 	}
 
+	public Plus1ConversionTracker setApplicationId(int applicationId)
+	{
+		mApplicationId = applicationId;
+
+		return this;
+	}
+
+	public Plus1ConversionTracker setCampaignId(int campaignId)
+	{
+		mCampaignId = campaignId;
+
+		return this;
+	}
+
 	public Plus1ConversionTracker setConversionUrl(String conversionUrl)
 	{
 		mConversionUrl = conversionUrl;
@@ -78,14 +96,24 @@ public final class Plus1ConversionTracker {
 		return this;
 	}
 
-	public String getConversionUrl()
+	public String getConversionUrl() throws InvalidStateException
 	{
-		return
-			mConversionUrl
-			+ "app/"
-			+ String.valueOf(APP_TYPE_ID)
-			+ "/"
-			+ String.valueOf(mApplicationId);
+		String url = mConversionUrl;
+
+		if (mCampaignId != 0)
+			url +=
+				"campaign/"
+				+ String.valueOf(APP_TYPE_ID) + "/"
+				+ String.valueOf(mCampaignId);
+		else if (mApplicationId != 0)
+			url +=
+				"app/"
+				+ String.valueOf(APP_TYPE_ID) + "/"
+				+ String.valueOf(mApplicationId);
+		else
+			throw new InvalidStateException();
+
+		return url;
 	}
 
 	private SharedPreferences getPreferences()

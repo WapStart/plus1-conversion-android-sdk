@@ -31,13 +31,13 @@ package ru.wapstart.plus1.conversion.helloconversion;
 
 import ru.wapstart.plus1.conversion.sdk.Plus1ConversionTracker;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.RelativeLayout;
 
 public class HelloConversionActivity extends Activity {
+	private static final String LOG_TAG = "HelloConversionActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,27 +52,12 @@ public class HelloConversionActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		final Plus1ConversionTracker tracker =
-			new Plus1ConversionTracker(this, /* Place your WapStart Plus1 application id here */);
-
-		if (tracker.isFirstRun()) {
-			(new AlertDialog.Builder(this))
-				.setTitle("Hello conversion")
-				.setMessage(
-					"This is a first launch of application."
-					+ " And now we count conversion"
-				)
-				.setPositiveButton(
-					"OK",
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							tracker.run();
-						}
-					}
-				)
-				.create()
-				.show();
+		try {
+			new Plus1ConversionTracker(this)
+				.setCampaignId(/* Place your WapStart Plus1 campaign id here */)
+				.run();
+		} catch (Plus1ConversionTracker.InvalidStateException e) {
+			Log.d(LOG_TAG, "Forget about set campain/application id");
 		}
 	}
 }
