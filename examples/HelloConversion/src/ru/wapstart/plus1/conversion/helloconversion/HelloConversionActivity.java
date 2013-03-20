@@ -33,12 +33,9 @@ import ru.wapstart.plus1.conversion.sdk.Plus1ConversionTracker;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.RelativeLayout;
 
 public class HelloConversionActivity extends Activity {
-	private static final String LOG_TAG = "HelloConversionActivity";
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -52,12 +49,8 @@ public class HelloConversionActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		try {
-			new Plus1ConversionTracker(this)
-				.setCampaignId(/* Place your WapStart Plus1 campaign id here */)
-				.run();
-		} catch (Plus1ConversionTracker.InvalidStateException e) {
-			Log.d(LOG_TAG, "Forget about set campain/application id");
-		}
+		new Plus1ConversionTracker(this)
+			.setCampaignId(/* Place your WapStart Plus1 campaign id here */)
+			.run();
 	}
 }

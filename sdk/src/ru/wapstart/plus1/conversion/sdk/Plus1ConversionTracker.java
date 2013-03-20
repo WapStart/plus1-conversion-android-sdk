@@ -33,11 +33,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
 
 public final class Plus1ConversionTracker {
-	public final class InvalidStateException extends Exception {
-		private static final long serialVersionUID = -6835835688341599416L;
-	}
+	private static final String LOG_TAG = "Plus1ConversionTracker";
 
 	private static final String PREFERENCES_NAME = "Plus1ConversionTracker";
 	private static final String PREFERENCES_OPTION_NAME = "firstRun";
@@ -57,21 +56,23 @@ public final class Plus1ConversionTracker {
 		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, true);
 	}
 	
-	public void run() throws InvalidStateException
+	public void run()
 	{
 		if (isFirstRun()) {
-			SharedPreferences.Editor editor = getPreferences().edit();
-			editor.putBoolean(PREFERENCES_OPTION_NAME, false);
-			editor.commit();
+			String url = getConversionUrl();
 
-			mContext.startActivity(
-				new Intent(
-					Intent.ACTION_VIEW,
-					Uri.parse(
-						getConversionUrl()
+			if (url != null) {
+				SharedPreferences.Editor editor = getPreferences().edit();
+				editor.putBoolean(PREFERENCES_OPTION_NAME, false);
+				editor.commit();
+
+				mContext.startActivity(
+					new Intent(
+						Intent.ACTION_VIEW,
+						Uri.parse(url)
 					)
-				)
-			);
+				);
+			}
 		}
 	}
 
@@ -96,22 +97,25 @@ public final class Plus1ConversionTracker {
 		return this;
 	}
 
-	public String getConversionUrl() throws InvalidStateException
+	public String getConversionUrl()
 	{
 		String url = mConversionUrl;
 
-		if (mCampaignId != 0)
+		if (mCampaignId != 0) {
 			url +=
 				"campaign/"
 				+ String.valueOf(APP_TYPE_ID) + "/"
 				+ String.valueOf(mCampaignId);
-		else if (mApplicationId != 0)
+		} else if (mApplicationId != 0) {
 			url +=
 				"app/"
 				+ String.valueOf(APP_TYPE_ID) + "/"
 				+ String.valueOf(mApplicationId);
-		else
-			throw new InvalidStateException();
+		} else {
+			Log.w(LOG_TAG, "You forget about set campain/application id");
+
+			url = null;
+		}
 
 		return url;
 	}
