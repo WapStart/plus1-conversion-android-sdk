@@ -33,6 +33,7 @@ import ru.wapstart.plus1.conversion.sdk.Plus1ConversionTracker;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.RelativeLayout;
 
 public class HelloConversionActivity extends Activity {
@@ -49,8 +50,16 @@ public class HelloConversionActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		new Plus1ConversionTracker(this)
-			.setCampaignId(/* Place your WapStart Plus1 campaign id here */)
-			.run();
+		try {
+			new Plus1ConversionTracker(this)
+				.setCampaignId(/* Place your WapStart Plus1 campaign id here */)
+				.setCallbackUrl("wsp1hc://ru.wapstart.plus1.conversion.hello")
+				.run();
+		} catch (Plus1ConversionTracker.CallbackUrlNotDefinedException e) {
+			Log.e(
+				HelloConversionActivity.class.getSimpleName(),
+				"You must define callback url"
+			);
+		}
 	}
 }
