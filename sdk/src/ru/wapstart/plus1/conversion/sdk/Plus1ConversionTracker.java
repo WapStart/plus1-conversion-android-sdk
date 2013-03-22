@@ -34,8 +34,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
+import android.util.Base64;
+
 
 public final class Plus1ConversionTracker {
+	public final class CallbackUrlNotDefinedException extends Exception {
+		private static final long serialVersionUID = -2570282021275294792L;
+	}
+
 	private static final String LOG_TAG = "Plus1ConversionTracker";
 
 	private static final String PREFERENCES_NAME = "Plus1ConversionTracker";
@@ -46,6 +52,7 @@ public final class Plus1ConversionTracker {
 	private Context mContext = null;
 	private int mApplicationId = 0;
 	private int mCampaignId = 0;
+	private String mCallbackUrl = null;
 	
 	public Plus1ConversionTracker(Context context) {
 		mContext = context;
@@ -56,7 +63,7 @@ public final class Plus1ConversionTracker {
 		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, true);
 	}
 	
-	public void run()
+	public void run() throws CallbackUrlNotDefinedException
 	{
 		if (isFirstRun()) {
 			String url = getConversionUrl();
@@ -97,8 +104,18 @@ public final class Plus1ConversionTracker {
 		return this;
 	}
 
-	public String getConversionUrl()
+	public Plus1ConversionTracker setCallbackUrl(String callbackUrl)
 	{
+		mCallbackUrl = callbackUrl;
+
+		return this;
+	}
+
+	public String getConversionUrl() throws CallbackUrlNotDefinedException
+	{
+		if (mCallbackUrl == null)
+			throw new CallbackUrlNotDefinedException();
+
 		String url = mConversionUrl;
 
 		if (mCampaignId != 0) {
@@ -114,10 +131,16 @@ public final class Plus1ConversionTracker {
 		} else {
 			Log.w(LOG_TAG, "You forget about set campain/application id");
 
-			url = null;
+			return null;
 		}
 
-		return url;
+		return
+			url
+			+ "/?callback="
+			+ Base64.encodeToString(
+				mCallbackUrl.getBytes(),
+				Base64.NO_WRAP
+			);
 	}
 
 	private SharedPreferences getPreferences()
