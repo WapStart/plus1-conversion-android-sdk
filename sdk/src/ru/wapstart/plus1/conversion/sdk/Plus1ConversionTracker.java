@@ -33,25 +33,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.util.Log;
 import android.util.Base64;
 
 
 public final class Plus1ConversionTracker {
+	public final class TrackIdNotDefinedException extends Exception {
+		private static final long serialVersionUID = -3015095209982953526L;
+	}
+
 	public final class CallbackUrlNotDefinedException extends Exception {
 		private static final long serialVersionUID = -2570282021275294792L;
 	}
 
-	private static final String LOG_TAG = "Plus1ConversionTracker";
-
 	private static final String PREFERENCES_NAME = "Plus1ConversionTracker";
 	private static final String PREFERENCES_OPTION_NAME = "firstRun";
-	private static final int APP_TYPE_ID = 3;
 	
 	private String mConversionUrl = "http://cnv.plus1.wapstart.ru/";
 	private Context mContext = null;
-	private int mApplicationId = 0;
-	private int mCampaignId = 0;
+	private String mTrackId = null;
 	private String mCallbackUrl = null;
 	
 	public Plus1ConversionTracker(Context context) {
@@ -63,7 +62,8 @@ public final class Plus1ConversionTracker {
 		return getPreferences().getBoolean(PREFERENCES_OPTION_NAME, true);
 	}
 	
-	public void run() throws CallbackUrlNotDefinedException
+	public void run()
+		throws TrackIdNotDefinedException, CallbackUrlNotDefinedException
 	{
 		if (isFirstRun()) {
 			String url = getConversionUrl();
@@ -83,16 +83,9 @@ public final class Plus1ConversionTracker {
 		}
 	}
 
-	public Plus1ConversionTracker setApplicationId(int applicationId)
+	public Plus1ConversionTracker setTrackId(String trackId)
 	{
-		mApplicationId = applicationId;
-
-		return this;
-	}
-
-	public Plus1ConversionTracker setCampaignId(int campaignId)
-	{
-		mCampaignId = campaignId;
+		mTrackId = trackId;
 
 		return this;
 	}
@@ -111,31 +104,18 @@ public final class Plus1ConversionTracker {
 		return this;
 	}
 
-	public String getConversionUrl() throws CallbackUrlNotDefinedException
+	public String getConversionUrl()
+		throws TrackIdNotDefinedException, CallbackUrlNotDefinedException
 	{
+		if (mTrackId == null)
+			throw new TrackIdNotDefinedException();
+
 		if (mCallbackUrl == null)
 			throw new CallbackUrlNotDefinedException();
 
-		String url = mConversionUrl;
-
-		if (mCampaignId != 0) {
-			url +=
-				"campaign/"
-				+ String.valueOf(APP_TYPE_ID) + "/"
-				+ String.valueOf(mCampaignId);
-		} else if (mApplicationId != 0) {
-			url +=
-				"app/"
-				+ String.valueOf(APP_TYPE_ID) + "/"
-				+ String.valueOf(mApplicationId);
-		} else {
-			Log.w(LOG_TAG, "You forget about set campain/application id");
-
-			return null;
-		}
-
 		return
-			url
+			mConversionUrl
+			+ mTrackId
 			+ "/?callback="
 			+ Base64.encodeToString(
 				mCallbackUrl.getBytes(),

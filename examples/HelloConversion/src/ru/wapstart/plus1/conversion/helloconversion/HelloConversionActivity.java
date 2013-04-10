@@ -52,9 +52,14 @@ public class HelloConversionActivity extends Activity {
 
 		try {
 			new Plus1ConversionTracker(this)
-				.setCampaignId(/* Place your WapStart Plus1 campaign id here */)
+				.setTrackId(/* Place your WapStart Plus1 conversion track id here */)
 				.setCallbackUrl("wsp1hc://ru.wapstart.plus1.conversion.hello")
 				.run();
+		} catch (Plus1ConversionTracker.TrackIdNotDefinedException e) {
+			Log.e(
+				HelloConversionActivity.class.getSimpleName(),
+				"You must define conversion track id"
+			);
 		} catch (Plus1ConversionTracker.CallbackUrlNotDefinedException e) {
 			Log.e(
 				HelloConversionActivity.class.getSimpleName(),
