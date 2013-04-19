@@ -32,9 +32,10 @@ package ru.wapstart.plus1.conversion.sdk;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Base64;
-
 
 public final class Plus1ConversionTracker {
 	public final class TrackIdNotDefinedException extends Exception {
@@ -65,7 +66,7 @@ public final class Plus1ConversionTracker {
 	public void run()
 		throws TrackIdNotDefinedException, CallbackUrlNotDefinedException
 	{
-		if (isFirstRun()) {
+		if (isFirstRun() && isOnline()) {
 			String url = getConversionUrl();
 
 			if (url != null) {
@@ -129,5 +130,17 @@ public final class Plus1ConversionTracker {
 			mContext
 				.getApplicationContext()
 				.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+	}
+
+	private boolean isOnline()
+	{
+		ConnectivityManager connectivityManager =
+			(ConnectivityManager) mContext.getApplicationContext()
+				.getSystemService(
+					Context.CONNECTIVITY_SERVICE
+				);
+		NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+
+		return (netInfo != null) && netInfo.isConnected();
 	}
 }
